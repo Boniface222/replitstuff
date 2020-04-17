@@ -1,26 +1,25 @@
 # main.py
 # Based on https://www.pygame.org/docs/tut/ChimpLineByLine.html
-# Working version 1.0
+# Somewhat working version 1.1
 
-import os, sys, io
+# Import Modules
+import os, pygame, io
 from urllib.request import urlopen
-import pygame
 from pygame.locals import *
 
-pygame.init()
-screen = pygame.display.set_mode((199, 188))
 
-if not pygame.font: print('Warning, fonts disabled')
-if not pygame.mixer: print('Warning, sound disabled')
-
+if not pygame.font:
+    print("Warning, fonts disabled")
+if not pygame.mixer:
+    print("Warning, sound disabled")
+                
 url = "https://www.google.com/logos/doodles/2020/thank-you-packaging-shipping-and-delivery-workers-6753651837108760-s.png"
-soundurl = "http://soundbible.com/grab.php?id=2218&type=wav"
-imgstr = urlopen(url).read()
-imgfile = io.BytesIO(imgstr)
-dvdLogo = pygame.image.load(imgfile)
-print("test")
 
+main_dir = os.path.split(os.path.abspath(__file__))[0]
+data_dir = os.path.join(main_dir, "data")
+print(data_dir)
 
+# functions to create our resources
 def load_image(name, colorkey=None):
     try:
         imgstr = urlopen(name).read()
@@ -36,23 +35,27 @@ def load_image(name, colorkey=None):
         image.set_colorkey(colorkey, RLEACCEL)
     return image, image.get_rect()
 
+
 def load_sound(name):
     class NoneSound:
-        def play(self): pass
+        def play(self):
+            pass
+        
     if not pygame.mixer:
         return NoneSound()
-    # fullname = os.path.join("data", name)
-    fullname = "C:\\Users\\Boniface\\Vim\\replitstuff\\data\\" + name
+    fullname = os.path.join(data_dir, name)
     try:
         sound = pygame.mixer.Sound(fullname)
     except pygame.error as message:
-        print('Cannot load sound:', wav)
+        print('Cannot load sound:', fullname)
         raise SystemExit(message)
     return sound
 
 
+# classes for our game objects
 class Fist(pygame.sprite.Sprite):
     """moves a clenched fist on the screen, following the mouse"""
+
     def __init__(self):
         pygame.sprite.Sprite.__init__(self) # call Sprite initializer
         self.image, self.rect = load_image(url, -1)
@@ -79,6 +82,7 @@ class Fist(pygame.sprite.Sprite):
 class Chimp(pygame.sprite.Sprite):
     """moves a monkey critter across the screen. it can spin the
        monkey when it is punched."""
+    
     def __init__(self):
         pygame.sprite.Sprite.__init__(self) # call Sprite initializer
         self.image, self.rect = load_image(url, -1)
@@ -98,9 +102,6 @@ class Chimp(pygame.sprite.Sprite):
     def _walk(self):
         """move the monkey across the screen, and turn at the ends"""
         newpos = self.rect.move((self.move, 0))
-        # print(f"newpos = {newpos}")
-        # print(f"self.area.contains newpos?: \
-        #         {self.area.contains(newpos)}")
         if not self.area.contains(newpos):
             if self.rect.left < self.area.left or \
                     self.rect.right > self.area.right:
@@ -142,7 +143,7 @@ if pygame.font:
     font = pygame.font.Font(None, 36)
     text = font.render("Pummel The Chimp, And Win $$$", 1, (10, 10, 10))
     textpos = text.get_rect(centerx=int(background.get_width()/2))
-    background.blit(text,textpos)
+    background.blit(text, textpos)
 
 
 screen.blit(background, (0, 0))
@@ -178,3 +179,4 @@ while running:
     allsprites.draw(screen)
     pygame.display.flip()
 
+pygame.quit()
